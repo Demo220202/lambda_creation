@@ -15,8 +15,8 @@ variable "existing_iam_role_name" {
 
 provider "aws" {
   region = "us-west-2"  # Change to your desired region
-  profile = "Aditya-demo"
 }
+# profile = "Aditya-demo"
 
 data "aws_iam_role" "existing_role" {
   name = var.existing_iam_role_name
