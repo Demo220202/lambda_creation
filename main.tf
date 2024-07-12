@@ -43,7 +43,7 @@ data "aws_iam_role" "existing_role" {
 
 resource "aws_lambda_function" "zen_lambda" {
   count = length(var.environments)
-
+  
   provider = var.environments[count.index] == "dr" ? aws.dr : aws.default
 
   function_name = "Zen-${var.environments[count.index]}-${var.lambda_name}"
