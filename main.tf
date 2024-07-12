@@ -6,7 +6,7 @@ variable "lambda_name" {
 variable "environments" {
   description = "The list of environments for which the Lambda functions will be created"
   type        = list(string)
-  default     = ["dev", "qa", "beta", "prod"]
+  default     = ["dev", "qa", "beta", "prod", "dr"]
 }
 
 variable "existing_iam_role_name" {
@@ -14,18 +14,38 @@ variable "existing_iam_role_name" {
   type        = string
 }
 
-provider "aws" {
-  region = "us-west-2"  # Change to your desired region
+variable "dr_region" {
+  description = "The region for the disaster recovery Lambda function"
+  type        = string
+  default     = "us-east-1"
 }
-# profile = "Aditya-demo"
+
+variable "default_region" {
+  description = "The default region for the Lambda functions"
+  type        = string
+  default     = "us-west-1"
+}
+
+provider "aws" {
+  alias  = "default"
+  region = var.default_region
+}
+
+provider "aws" {
+  alias  = "dr"
+  region = var.dr_region
+}
 
 data "aws_iam_role" "existing_role" {
-  name = var.existing_iam_role_name
+  provider = aws.default
+  name     = var.existing_iam_role_name
 }
 
 resource "aws_lambda_function" "zen_lambda" {
   count = length(var.environments)
-  
+
+  provider = var.environments[count.index] == "dr" ? aws.dr : aws.default
+
   function_name = "Zen-${var.environments[count.index]}-${var.lambda_name}"
   role          = data.aws_iam_role.existing_role.arn
   handler       = "lambda_function.lambda_handler"
