@@ -1,11 +1,12 @@
-variable "environment" {
-  description = "The environment for the Lambda function (e.g., dev, prod)"
+variable "lambda_name" {
+  description = "The base name of the Lambda function"
   type        = string
 }
 
-variable "function_name" {
-  description = "The base name of the Lambda function"
-  type        = string
+variable "environments" {
+  description = "The list of environments for which the Lambda functions will be created"
+  type        = list(string)
+  default     = ["dev", "qa", "beta", "prod"]
 }
 
 variable "existing_iam_role_name" {
@@ -23,21 +24,20 @@ data "aws_iam_role" "existing_role" {
 }
 
 resource "aws_lambda_function" "zen_lambda" {
-  function_name = "Zen-${var.environment}-${var.function_name}"
+  count = length(var.environments)
+  
+  function_name = "Zen-${var.environments[count.index]}-${var.lambda_name}"
   role          = data.aws_iam_role.existing_role.arn
   handler       = "lambda_function.lambda_handler"
   runtime       = "python3.9"
-  
 
-  # Source code for the Lambda function
+  # Source code for the Lambda function from a local zip file
   filename = "lambda_function_payload.zip"
 
-  # Environment variables
+  # Optionally, you can add environment variables
+  # environment {
+  #   variables = {
+  #     ENV = var.environments[count.index]
+  #   }
+  # }
 }
-
-# terraform apply -var "environment=dev" -var "function_name=test1" -var "existing_iam_role_name=lamda-role"
-#   environment {
-#     variables = {
-#       ENV = var.environment
-#     }
-#   }
