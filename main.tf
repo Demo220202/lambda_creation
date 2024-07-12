@@ -35,14 +35,13 @@ variable "default_region" {
 provider "aws" {
   alias  = "default"
   region = var.default_region
-  profile = "Aditya-demo"
 }
 
 provider "aws" {
   alias  = "dr"
   region = var.dr_region
-  profile = "Aditya-demo"
 }
+# profile = "Aditya-demo"
 
 data "aws_iam_role" "existing_role" {
   provider = aws.default
