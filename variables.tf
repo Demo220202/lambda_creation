@@ -42,3 +42,14 @@ variable "subnet_id" {
   type        = string
 }
 
+variable "eventbridge_rule_name" {
+  description = "The name of the EventBridge rule"
+  type        = string
+}
+
+variable "eventbridge_rule_pattern" {
+  description = "The event pattern for the EventBridge rule"
+  type        = string
+}
+
+
