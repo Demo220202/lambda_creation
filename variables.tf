@@ -36,3 +36,9 @@ variable "lambda_layers" {
   type        = list(string)
   default     = []
 }
+
+variable "subnet_id" {
+  description = "The subnet ID to use for the Lambda function"
+  type        = string
+}
+
