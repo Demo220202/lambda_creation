@@ -3,6 +3,11 @@ variable "environment" {
   type        = string
 }
 
+variable "region" {
+  description = "The Region"
+  type        = string
+}
+
 variable "function_name" {
   description = "The name of the Lambda function"
   type        = string
