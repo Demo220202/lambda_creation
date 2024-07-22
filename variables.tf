@@ -41,9 +41,10 @@ variable "lambda_layers" {
   default     = []
 }
 
-variable "subnet_id" {
+variable "subnet_ids" {
   description = "The subnet ID to use for the Lambda function"
-  type        = string
+  type        = list(string)
+  default     = []
 }
 
 variable "eventbridge_rule_name" {
