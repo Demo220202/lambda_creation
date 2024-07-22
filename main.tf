@@ -1,43 +1,67 @@
-variable "environment" {
-  description = "The environment for the Lambda function (e.g., dev, prod)"
-  type        = string
-}
-
-variable "function_name" {
-  description = "The base name of the Lambda function"
-  type        = string
-}
-
-variable "existing_iam_role_name" {
-  description = "The name of the existing IAM role to attach to the Lambda function"
-  type        = string
-}
-
 provider "aws" {
-  region = "us-west-2"  # Change to your desired region
-}
-# profile = "Aditya-demo"
-
-data "aws_iam_role" "existing_role" {
-  name = var.existing_iam_role_name
+  region = "us-west-2"
 }
 
-resource "aws_lambda_function" "zen_lambda" {
+resource "aws_lambda_function" "lambda_function" {
   function_name = "Zen-${var.environment}-${var.function_name}"
-  role          = data.aws_iam_role.existing_role.arn
   handler       = "lambda_function.lambda_handler"
-  runtime       = "python3.9"
-  
+  role          = aws_iam_role.lambda_exec_role.arn
+  runtime       = "python3.8"
+  filename      = "lambda_function_payload.zip"
 
-  # Source code for the Lambda function
-  filename = "lambda_function_payload.zip"
+  environment {
+    variables = {
+      REDIS_ENDPOINT = var.redis_endpoint
+    }
+  }
 
-  # Environment variables
+  vpc_config {
+    security_group_ids = var.security_groups
+    subnet_ids         = [var.subnet_id]  # Replace with your subnet IDs
+  }
+
+  layers = var.lambda_layers
+
+  reserved_concurrent_executions = var.concurrency_limit
 }
 
-# terraform apply -var "environment=dev" -var "function_name=test1" -var "existing_iam_role_name=lamda-role"
-#   environment {
-#     variables = {
-#       ENV = var.environment
-#     }
-#   }
+resource "aws_iam_role" "lambda_exec_role" {
+  name = var.existing_iam_role_name
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Principal": {
+        "Service": "lambda.amazonaws.com"
+      },
+      "Effect": "Allow",
+      "Sid": ""
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy" "lambda_policy" {
+  name   = "lambda_policy"
+  role   = aws_iam_role.lambda_exec_role.id
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "logs:*",
+        "dynamodb:*",
+        "s3:*"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+EOF
+}
