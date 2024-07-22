@@ -3,18 +3,18 @@ provider "aws" {
   # profile = "Aditya-demo"
 }
 
-provider "aws" {
-  alias   = "us-east-1"
-  region  = "us-east-1"
+#provider "aws" {
+  #alias   = "us-east-1"
+  #region  = "us-east-1"
   # profile = "Aditya-demo"
-}
+#}
 
 data "aws_security_group" "selected" {
   name = var.security_group_name
 }
 
 resource "aws_cloudwatch_event_rule" "lambda_schedule" {
-  provider = var.environment == "dr" ? aws.us-east-1 : aws
+  #provider = var.environment == "dr" ? aws.us-east-1 : aws
 
   name                = "${var.environment}-${var.function_name}-rule"
   schedule_expression = var.eventbridge_schedule_expression
@@ -26,7 +26,7 @@ resource "aws_cloudwatch_event_rule" "lambda_schedule" {
 }
 
 resource "aws_cloudwatch_event_target" "lambda_target" {
-  provider = var.environment == "dr" ? aws.us-east-1 : aws
+  #provider = var.environment == "dr" ? aws.us-east-1 : aws
 
   rule      = aws_cloudwatch_event_rule.lambda_schedule.name
   target_id = "lambda"
@@ -34,7 +34,7 @@ resource "aws_cloudwatch_event_target" "lambda_target" {
 }
 
 resource "aws_lambda_permission" "allow_cloudwatch_to_call_lambda" {
-  provider = var.environment == "dr" ? aws.us-east-1 : aws
+  #provider = var.environment == "dr" ? aws.us-east-1 : aws
 
   statement_id  = "AllowExecutionFromCloudWatch"
   action        = "lambda:InvokeFunction"
@@ -44,7 +44,7 @@ resource "aws_lambda_permission" "allow_cloudwatch_to_call_lambda" {
 }
 
 resource "aws_lambda_function" "lambda_function" {
-  provider = var.environment == "dr" ? aws.us-east-1 : aws
+  #provider = var.environment == "dr" ? aws.us-east-1 : aws
 
   function_name = "Zen-${var.environment}-${var.function_name}"
   handler       = "lambda_function.lambda_handler"
