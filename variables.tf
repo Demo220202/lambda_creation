@@ -16,10 +16,17 @@ variable "existing_iam_role_name" {
 variable "subnet_ids" {
   description = "List of subnet IDs"
   type        = list(string)
+  default     = ["subnet-12345"]
 }
 
 variable "redis_endpoint" {
   description = "Redis endpoint"
+  type        = string
+  default     = ""
+}
+
+variable "redis_endpoint_prod" {
+  description = "Redis endpoint for prod environment"
   type        = string
   default     = ""
 }
@@ -42,6 +49,11 @@ variable "concurrency_limit" {
 
 variable "region" {
   description = "AWS Region"
+  type        = string
+}
+
+variable "vpc_id" {
+  description = "VPC ID where the security group will be created"
   type        = string
 }
 
