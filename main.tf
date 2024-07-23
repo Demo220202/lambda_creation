@@ -32,6 +32,10 @@ resource "aws_lambda_function" "lambda" {
   layers = var.lambda_layers
 
   reserved_concurrent_executions = var.concurrency_limit
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "aws_lambda_permission" "allow_eventbridge" {
@@ -40,15 +44,27 @@ resource "aws_lambda_permission" "allow_eventbridge" {
   function_name = aws_lambda_function.lambda.function_name
   principal     = "events.amazonaws.com"
   source_arn    = aws_cloudwatch_event_rule.scheduled.arn
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "aws_cloudwatch_event_rule" "scheduled" {
   name                = "Zen-${var.environment}-${var.function_name}-rule"
   schedule_expression = var.eventbridge_rule_schedule
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "aws_cloudwatch_event_target" "lambda_target" {
   rule      = aws_cloudwatch_event_rule.scheduled.name
   target_id = "lambda_target"
   arn       = aws_lambda_function.lambda.arn
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
