@@ -16,7 +16,7 @@ variable "existing_iam_role_name" {
 variable "subnet_ids" {
   description = "List of subnet IDs"
   type        = list(string)
-  default     = ["subnet-12345"]
+  default     = ["subnet-05ec782ffe06a27ee"]
 }
 
 variable "redis_endpoint" {
@@ -28,7 +28,7 @@ variable "redis_endpoint" {
 variable "redis_endpoint_prod" {
   description = "Redis endpoint for prod environment"
   type        = string
-  default     = ""
+  default     = "testlambda-1os2ns.serverless.usw2.cache.amazonaws.com:6379"
 }
 
 variable "security_group_name" {
