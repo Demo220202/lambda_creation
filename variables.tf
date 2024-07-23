@@ -1,10 +1,5 @@
 variable "environment" {
-  description = "The environment (dev, qa, beta, prod, dr)"
-  type        = string
-}
-
-variable "region" {
-  description = "The Region"
+  description = "The environment to deploy (dev, qa, beta, prod, dr)"
   type        = string
 }
 
@@ -14,47 +9,48 @@ variable "function_name" {
 }
 
 variable "existing_iam_role_name" {
-  description = "The existing IAM role name to use for the Lambda function"
+  description = "The name of the existing IAM role"
   type        = string
 }
 
+variable "subnet_ids" {
+  description = "List of subnet IDs"
+  type        = list(string)
+}
+
 variable "redis_endpoint" {
-  description = "The Redis endpoint"
+  description = "Redis endpoint"
   type        = string
   default     = ""
 }
 
 variable "security_group_name" {
-  description = "The name of the security group"
+  description = "Security group name"
   type        = string
+}
+
+variable "lambda_layers" {
+  description = "List of Lambda layers ARNs"
+  type        = list(string)
+  default     = []
 }
 
 variable "concurrency_limit" {
   description = "Concurrency limit for the Lambda function"
   type        = number
-  default     = 5
 }
 
-variable "lambda_layers" {
-  description = "List of Lambda layer ARNs"
-  type        = list(string)
-  default     = []
-}
-
-variable "subnet_ids" {
-  description = "The subnet ID to use for the Lambda function"
-  type        = list(string)
-  default     = []
+variable "region" {
+  description = "AWS Region"
+  type        = string
 }
 
 variable "eventbridge_rule_name" {
   description = "EventBridge rule name"
   type        = string
-  default     = ""
 }
 
-variable "eventbridge_schedule_expression" {
+variable "eventbridge_rule_schedule" {
   description = "EventBridge rule schedule expression"
   type        = string
-  default     = "rate(10 minutes)"
 }
