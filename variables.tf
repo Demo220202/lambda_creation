@@ -1,38 +1,67 @@
-variable "vpc_id" {
-  type = map(string)
-  description = "Map of VPC IDs for each environment."
+variable "environment" {
+  description = "The environment to deploy (dev, qa, beta, prod, dr)"
+  type        = string
+}
+
+variable "function_name" {
+  description = "The name of the Lambda function"
+  type        = string
+}
+
+variable "existing_iam_role_name" {
+  description = "The name of the existing IAM role"
+  type        = string
+}
+
+variable "redis_endpoint" {
+  description = "Redis endpoint"
+  type        = string
+  default     = ""
+}
+
+variable "redis_endpoint_prod" {
+  description = "Redis endpoint for prod environment"
+  type        = string
+  default     = "testlambda-1os2ns.serverless.usw2.cache.amazonaws.com:6379"
+}
+
+variable "security_group_name" {
+  description = "Security group name"
+  type        = string
 }
 
 variable "lambda_layers" {
-  type = map(list(string))
-  description = "Map of Lambda layers ARNs for each environment."
+  description = "List of Lambda layers ARNs"
+  type        = list(string)
+  default     = []
 }
 
-variable "iam_role" {
-  type = map(string)
-  description = "Map of IAM role ARNs for each environment."
+variable "concurrency_limit" {
+  description = "Concurrency limit for the Lambda function"
+  type        = number
 }
 
-variable "eventbridge_schedule" {
-  type = map(string)
-  description = "Map of EventBridge schedule expressions for each environment."
+variable "region" {
+  description = "AWS Region"
+  type        = string
 }
 
-variable "lambda_config" {
-  type = map(object({
-    memory_size       = number
-    ephemeral_storage = number
-    timeout           = number
-  }))
-  description = "Map of Lambda configuration settings for each environment."
+variable "vpc_id" {
+  description = "VPC ID where the security group will be created"
+  type        = string
+}
+
+variable "eventbridge_rule_name" {
+  description = "EventBridge rule name"
+  type        = string
+}
+
+variable "eventbridge_rule_schedule" {
+  description = "EventBridge rule schedule expression"
+  type        = string
 }
 
 variable "runtime" {
+  description = "Lambda runtime"
   type        = string
-  description = "Lambda runtime environment."
-}
-
-variable "tags" {
-  type = map(string)
-  description = "Tags for the resources."
 }
