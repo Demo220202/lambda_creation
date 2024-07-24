@@ -1,68 +1,101 @@
-variable "environment" {
-  description = "The environment to deploy (dev, qa, beta, prod, dr)"
-  type        = string
+provider "aws" {
+  region = var.region
 }
 
-variable "function_name" {
-  description = "The name of the Lambda function"
-  type        = string
+data "aws_iam_role" "existing_role" {
+  name = var.existing_iam_role_name
 }
 
-variable "existing_iam_role_name" {
-  description = "The name of the existing IAM role"
-  type        = string
+data "aws_vpc" "selected" {
+  id = var.vpc_id
 }
 
-variable "redis_endpoint" {
-  description = "Redis endpoint"
-  type        = string
-  default     = ""
+data "aws_subnets" "private_subnets" {
+  filter {
+    name   = "vpc-id"
+    values = [var.vpc_id]
+  }
+  filter {
+    name   = "tag:Name"
+    values = ["*private*"]
+  }
 }
 
-variable "redis_endpoint_prod" {
-  description = "Redis endpoint for prod environment"
-  type        = string
-  default     = "testlambda-1os2ns.serverless.usw2.cache.amazonaws.com:6379"
+resource "aws_security_group" "sg" {
+  name        = "${var.environment}-${var.function_name}-sg"
+  description = "Security group for ${var.environment} environment"
+  vpc_id      = var.vpc_id
+
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
 
-variable "lambda_layers" {
-  description = "List of Lambda layers ARNs"
-  type        = list(string)
-  default     = []
+resource "aws_lambda_function" "lambda" {
+  function_name = "Zen-${var.environment}-${var.function_name}"
+  role          = data.aws_iam_role.existing_role.arn
+  handler       = "lambda_function.lambda_handler"
+  runtime       = var.runtime
+
+  vpc_config {
+    subnet_ids         = data.aws_subnets.private_subnets.ids
+    security_group_ids = [aws_security_group.sg.id]
+  }
+
+  environment {
+    variables = {
+      REDIS_ENDPOINT = var.environment == "prod" ? var.redis_endpoint_prod : var.redis_endpoint
+    }
+  }
+
+  layers = var.lambda_layers
+
+  reserved_concurrent_executions = var.concurrency_limit
+
+  tags = var.tags
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
-variable "concurrency_limit" {
-  description = "Concurrency limit for the Lambda function"
-  type        = number
+resource "aws_lambda_permission" "allow_eventbridge" {
+  statement_id  = "AllowExecutionFromEventBridge"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.lambda.function_name
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.scheduled.arn
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
-variable "region" {
-  description = "AWS Region"
-  type        = string
+resource "aws_cloudwatch_event_rule" "scheduled" {
+  name                = "Zen-${var.environment}-${var.function_name}-rule"
+  schedule_expression = var.eventbridge_rule_schedule
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
-variable "vpc_id" {
-  description = "VPC ID where the security group will be created"
-  type        = string
-}
+resource "aws_cloudwatch_event_target" "lambda_target" {
+  rule      = aws_cloudwatch_event_rule.scheduled.name
+  target_id = "lambda_target"
+  arn       = aws_lambda_function.lambda.arn
 
-variable "eventbridge_rule_name" {
-  description = "EventBridge rule name"
-  type        = string
-}
-
-variable "eventbridge_rule_schedule" {
-  description = "EventBridge rule schedule expression"
-  type        = string
-}
-
-variable "runtime" {
-  description = "The runtime environment for the Lambda function"
-  type        = string
-}
-
-variable "tags" {
-  description = "Tags for the Lambda function"
-  type        = map(string)
-  default     = {}
+  lifecycle {
+    prevent_destroy = true
+  }
 }
