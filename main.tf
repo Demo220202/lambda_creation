@@ -1,12 +1,12 @@
 provider "aws" {
-  region = "us-west-2"
+  region = var.region["dev"]  # This will be overridden by environment variables in Jenkins
 }
 
 resource "aws_security_group" "lambda_sg" {
   for_each = var.vpc_id
 
   vpc_id = each.value
-  name   = "${each.key}-lambda-sg"
+  name   = "Zen-${each.key}-${var.lambda_name}-sg"
   
   ingress {
     from_port   = 0
@@ -25,36 +25,7 @@ resource "aws_security_group" "lambda_sg" {
   tags = merge(
     var.tags,
     {
-      Name = "${each.key}-lambda-sg"
-    }
-  )
-}
-
-resource "aws_lambda_function" "lambda" {
-  for_each = var.vpc_id
-
-  function_name = "${each.key}-lambda"
-  role          = var.iam_role[each.key]
-  handler       = "lambda_function.lambda_handler"
-  runtime       = var.runtime
-  memory_size   = var.lambda_config[each.key].memory_size
-  timeout       = var.lambda_config[each.key].timeout
-  ephemeral_storage = var.lambda_config[each.key].ephemeral_storage
-
-  vpc_config {
-    subnet_ids         = data.aws_subnets.private.ids
-    security_group_ids = [aws_security_group.lambda_sg[each.key].id]
-  }
-
-  layers = var.lambda_layers[each.key]
-
-  source_code_hash = filebase64sha256("lambda.zip")
-  filename          = "lambda.zip"
-
-  tags = merge(
-    var.tags,
-    {
-      Name = "${each.key}-lambda"
+      Name = "Zen-${each.key}-${var.lambda_name}-sg"
     }
   )
 }
@@ -67,16 +38,42 @@ data "aws_subnet_ids" "private" {
   }
 }
 
+resource "aws_lambda_function" "lambda" {
+  for_each = var.vpc_id
+
+  function_name = "Zen-${each.key}-${var.lambda_name}"
+  role          = var.iam_role[each.key]
+  handler       = "lambda_function.lambda_handler"
+  runtime       = var.runtime
+  memory_size   = var.lambda_config[each.key].memory_size
+  timeout       = var.lambda_config[each.key].timeout
+  ephemeral_storage = var.lambda_config[each.key].ephemeral_storage
+
+  vpc_config {
+    subnet_ids         = data.aws_subnet_ids.private.ids
+    security_group_ids = [aws_security_group.lambda_sg[each.key].id]
+  }
+
+  layers = var.lambda_layers[each.key]
+
+  tags = merge(
+    var.tags,
+    {
+      Name = "Zen-${each.key}-${var.lambda_name}"
+    }
+  )
+}
+
 resource "aws_cloudwatch_event_rule" "event_rule" {
   for_each = var.eventbridge_schedule
 
-  name        = "Zen-${each.key}-lambda-rule"
+  name        = "Zen-${each.key}-${var.lambda_name}-rule"
   schedule_expression = each.value
 
   tags = merge(
     var.tags,
     {
-      Name = "Zen-${each.key}-lambda-rule"
+      Name = "Zen-${each.key}-${var.lambda_name}-rule"
     }
   )
 }
@@ -86,7 +83,7 @@ resource "aws_cloudwatch_event_target" "event_target" {
 
   rule      = aws_cloudwatch_event_rule.event_rule[each.key].name
   arn       = aws_lambda_function.lambda[each.key].arn
-  target_id = "${each.key}-target"
+  target_id = "Zen-${each.key}-${var.lambda_name}-target"
 
   input_transformer {
     input_paths = {
