@@ -6,6 +6,11 @@ data "aws_iam_role" "existing_role" {
   name = var.existing_iam_role_name
 }
 
+
+data "aws_vpc" "selected" {
+  id = var.vpc_id
+}
+
 data "aws_subnets" "private_subnets" {
   filter {
     name   = "vpc-id"
@@ -14,26 +19,6 @@ data "aws_subnets" "private_subnets" {
   filter {
     name   = "tag:Name"
     values = ["*private*"]
-  }
-}
-
-resource "aws_security_group" "sg" {
-  name        = "${var.environment}-${var.function_name}-sg"
-  description = "Security group for ${var.environment} environment"
-  vpc_id      = var.vpc_id
-
-  ingress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -53,7 +38,7 @@ resource "aws_lambda_function" "lambda" {
     for_each = var.vpc_id != "" && length(data.aws_subnets.private_subnets.ids) > 0 ? [1] : []
     content {
       subnet_ids         = data.aws_subnets.private_subnets.ids
-      security_group_ids = [aws_security_group.sg.id]
+      security_group_ids = var.security_group_ids
     }
   }
 
@@ -75,6 +60,7 @@ resource "aws_lambda_function" "lambda" {
     prevent_destroy = true
   }
 }
+
 
 
 
