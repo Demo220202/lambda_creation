@@ -1,10 +1,5 @@
-variable "environment" {
-  description = "The environment to deploy (dev, qa, beta, prod, dr)"
-  type        = string
-}
-
-variable "function_name" {
-  description = "The name of the Lambda function"
+variable "region" {
+  description = "The region to deploy to"
   type        = string
 }
 
@@ -13,82 +8,68 @@ variable "existing_iam_role_name" {
   type        = string
 }
 
-
-variable "redis_endpoint" {
-  description = "Redis endpoint"
-  type        = string
-  default     = ""
-}
-
-variable "redis_endpoint_prod" {
-  description = "Redis endpoint for prod environment"
-  type        = string
-  default     = "testlambda-1os2ns.serverless.usw2.cache.amazonaws.com:6379"
-}
-
-variable "security_group_name" {
-  description = "Security group name"
+variable "vpc_id" {
+  description = "The VPC ID to associate with the Lambda function."
   type        = string
 }
 
 variable "security_group_ids" {
-  description = "Security Group IDs for the Lambda function"
+  description = "List of security group IDs to associate with the Lambda function."
   type        = list(string)
   default     = []
 }
 
-variable "lambda_layers" {
-  description = "List of Lambda layers ARNs"
-  type        = list(string)
-  default     = []
-}
-
-variable "concurrency_limit" {
-  description = "Concurrency limit for the Lambda function"
-  type        = number
-}
-
-variable "region" {
-  description = "AWS Region"
+variable "environment" {
+  description = "The environment name"
   type        = string
 }
 
-variable "vpc_id" {
-  description = "VPC ID where the security group will be created"
+variable "function_name" {
+  description = "The name of the Lambda function"
   type        = string
 }
 
-variable "eventbridge_rule_name" {
-  description = "EventBridge rule name"
-  type        = string
-}
-
-variable "eventbridge_rule_schedule" {
-  description = "EventBridge rule schedule expression"
+variable "runtime" {
+  description = "The runtime environment for the Lambda function"
   type        = string
 }
 
 variable "memory_size" {
-  description = "Memory size for the Lambda function"
+  description = "The amount of memory available to the Lambda function"
   type        = number
-  default     = 128
 }
 
 variable "ephemeral_storage" {
-  description = "Ephemeral storage for the Lambda function in MB"
+  description = "The amount of ephemeral storage available to the Lambda function"
   type        = number
-  default     = 512
 }
 
 variable "timeout" {
-  description = "Timeout for the Lambda function in seconds"
+  description = "The function execution time at which AWS Lambda should terminate the function"
   type        = number
-  default     = 30
 }
 
-variable "runtime" {
-  description = "Runtime for the Lambda function"
+variable "redis_endpoint" {
+  description = "The Redis endpoint"
   type        = string
-  default     = "python3.8"
 }
 
+variable "redis_endpoint_prod" {
+  description = "The Redis endpoint for production"
+  type        = string
+}
+
+variable "lambda_layers" {
+  description = "List of Lambda layers to attach to the function"
+  type        = list(string)
+}
+
+variable "concurrency_limit" {
+  description = "Reserved concurrent executions for the Lambda function"
+  type        = number
+}
+
+variable "eventbridge_rule_schedule" {
+  description = "The schedule expression for the EventBridge rule"
+  type        = string
+}
