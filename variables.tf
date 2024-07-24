@@ -84,3 +84,9 @@ variable "eventbridge_rule_schedule" {
   description = "The schedule expression for the EventBridge rule"
   type        = string
 }
+
+variable "redis_endpoint" {
+  description = "The Redis endpoint"
+  type        = string
+}
+
