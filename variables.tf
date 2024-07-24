@@ -85,8 +85,3 @@ variable "eventbridge_rule_schedule" {
   type        = string
 }
 
-variable "redis_endpoint" {
-  description = "The Redis endpoint"
-  type        = string
-}
-
