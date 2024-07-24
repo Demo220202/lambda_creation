@@ -53,13 +53,18 @@ resource "aws_lambda_function" "lambda" {
   }
   timeout       = var.timeout
 
-  dynamic "vpc_config" {
-    for_each = var.vpc_id != "" && length(data.aws_subnets.private_subnets.ids) > 0 && length(var.security_group_ids) > 0 ? [1] : []
-    content {
-      subnet_ids         = data.aws_subnets.private_subnets.ids
-      security_group_ids = var.security_group_ids
-    }
+  vpc_config {
+    subnet_ids         = data.aws_subnets.private_subnets.ids
+    security_group_ids = [aws_security_group.sg.id]
   }
+  
+  #dynamic "vpc_config" {
+    #for_each = var.vpc_id != "" && length(data.aws_subnets.private_subnets.ids) > 0 && length(var.security_group_ids) > 0 ? [1] : []
+    #content {
+     # subnet_ids         = data.aws_subnets.private_subnets.ids
+    #  security_group_ids = var.security_group_ids
+   # }
+  #}
 
   environment {
     variables = {
