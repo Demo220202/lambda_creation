@@ -25,11 +25,6 @@ variable "redis_endpoint_prod" {
   default     = "testlambda-1os2ns.serverless.usw2.cache.amazonaws.com:6379"
 }
 
-variable "security_group_name" {
-  description = "Security group name"
-  type        = string
-}
-
 variable "lambda_layers" {
   description = "List of Lambda layers ARNs"
   type        = list(string)
@@ -62,6 +57,12 @@ variable "eventbridge_rule_schedule" {
 }
 
 variable "runtime" {
-  description = "Lambda runtime"
+  description = "The runtime environment for the Lambda function"
   type        = string
+}
+
+variable "tags" {
+  description = "Tags for the Lambda function"
+  type        = map(string)
+  default     = {}
 }
