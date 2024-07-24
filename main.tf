@@ -49,9 +49,12 @@ resource "aws_lambda_function" "lambda" {
   }
   timeout = var.timeout
 
-  vpc_config {
-    subnet_ids         = data.aws_subnets.private_subnets.ids
-    security_group_ids = [aws_security_group.sg.id]
+  dynamic "vpc_config" {
+    for_each = var.vpc_id != "" && length(data.aws_subnets.private_subnets.ids) > 0 ? [1] : []
+    content {
+      subnet_ids         = data.aws_subnets.private_subnets.ids
+      security_group_ids = [aws_security_group.sg.id]
+    }
   }
 
   environment {
@@ -72,6 +75,7 @@ resource "aws_lambda_function" "lambda" {
     prevent_destroy = true
   }
 }
+
 
 
 resource "aws_lambda_alias" "lambda_alias" {
