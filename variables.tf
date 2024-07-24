@@ -13,6 +13,7 @@ variable "existing_iam_role_name" {
   type        = string
 }
 
+
 variable "redis_endpoint" {
   description = "Redis endpoint"
   type        = string
@@ -23,6 +24,17 @@ variable "redis_endpoint_prod" {
   description = "Redis endpoint for prod environment"
   type        = string
   default     = "testlambda-1os2ns.serverless.usw2.cache.amazonaws.com:6379"
+}
+
+variable "security_group_name" {
+  description = "Security group name"
+  type        = string
+}
+
+variable "security_group_ids" {
+  description = "Security Group IDs for the Lambda function"
+  type        = list(string)
+  default     = []
 }
 
 variable "lambda_layers" {
@@ -56,13 +68,26 @@ variable "eventbridge_rule_schedule" {
   type        = string
 }
 
-variable "runtime" {
-  description = "The runtime environment for the Lambda function"
-  type        = string
+variable "memory_size" {
+  description = "Memory size for the Lambda function"
+  type        = number
+  default     = 128
 }
 
-variable "tags" {
-  description = "Tags for the Lambda function"
-  type        = map(string)
-  default     = {}
+variable "ephemeral_storage" {
+  description = "Ephemeral storage for the Lambda function in MB"
+  type        = number
+  default     = 512
+}
+
+variable "timeout" {
+  description = "Timeout for the Lambda function in seconds"
+  type        = number
+  default     = 30
+}
+
+variable "runtime" {
+  description = "Runtime for the Lambda function"
+  type        = string
+  default     = "python3.8"
 }
