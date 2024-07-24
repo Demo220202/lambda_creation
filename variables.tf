@@ -69,6 +69,17 @@ variable "concurrency_limit" {
   type        = number
 }
 
+variable "eventbridge_rule_name" {
+  description = "Name of the EventBridge rule"
+  type        = string
+}
+
+variable "security_group_name" {
+  description = "Name of the security group"
+  type        = string
+}
+
+
 variable "eventbridge_rule_schedule" {
   description = "The schedule expression for the EventBridge rule"
   type        = string
