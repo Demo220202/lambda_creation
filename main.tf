@@ -6,7 +6,6 @@ data "aws_iam_role" "existing_role" {
   name = var.existing_iam_role_name
 }
 
-
 data "aws_vpc" "selected" {
   id = var.vpc_id
 }
@@ -42,7 +41,6 @@ resource "aws_security_group" "sg" {
   }
 }
 
-
 resource "aws_lambda_function" "lambda" {
   function_name = "Zen-${var.environment}-${var.function_name}"
   role          = data.aws_iam_role.existing_role.arn
@@ -53,10 +51,10 @@ resource "aws_lambda_function" "lambda" {
   ephemeral_storage {
     size = var.ephemeral_storage
   }
-  timeout = var.timeout
+  timeout       = var.timeout
 
   dynamic "vpc_config" {
-    for_each = var.vpc_id != "" && length(data.aws_subnets.private_subnets.ids) > 0 ? [1] : []
+    for_each = var.vpc_id != "" && length(data.aws_subnets.private_subnets.ids) > 0 && length(var.security_group_ids) > 0 ? [1] : []
     content {
       subnet_ids         = data.aws_subnets.private_subnets.ids
       security_group_ids = var.security_group_ids
@@ -81,9 +79,6 @@ resource "aws_lambda_function" "lambda" {
     prevent_destroy = true
   }
 }
-
-
-
 
 resource "aws_lambda_alias" "lambda_alias" {
   name             = "${var.environment}-alias"
