@@ -13,11 +13,6 @@ variable "existing_iam_role_name" {
   type        = string
 }
 
-variable "subnet_ids" {
-  description = "List of subnet IDs"
-  type        = list(string)
-  default     = ["subnet-05ec782ffe06a27ee"]
-}
 
 variable "redis_endpoint" {
   description = "Redis endpoint"
