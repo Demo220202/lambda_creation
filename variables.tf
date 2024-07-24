@@ -1,26 +1,5 @@
-variable "region" {
-  description = "The region to deploy to"
-  type        = string
-}
-
-variable "existing_iam_role_name" {
-  description = "The name of the existing IAM role"
-  type        = string
-}
-
-variable "vpc_id" {
-  description = "The VPC ID to associate with the Lambda function."
-  type        = string
-}
-
-variable "security_group_ids" {
-  description = "List of security group IDs to associate with the Lambda function."
-  type        = list(string)
-  default     = []
-}
-
 variable "environment" {
-  description = "The environment name"
+  description = "The environment to deploy (dev, qa, beta, prod, dr)"
   type        = string
 }
 
@@ -29,59 +8,61 @@ variable "function_name" {
   type        = string
 }
 
-variable "runtime" {
-  description = "The runtime environment for the Lambda function"
+variable "existing_iam_role_name" {
+  description = "The name of the existing IAM role"
   type        = string
 }
 
-variable "memory_size" {
-  description = "The amount of memory available to the Lambda function"
-  type        = number
-}
-
-variable "ephemeral_storage" {
-  description = "The amount of ephemeral storage available to the Lambda function"
-  type        = number
-}
-
-variable "timeout" {
-  description = "The function execution time at which AWS Lambda should terminate the function"
-  type        = number
+variable "subnet_ids" {
+  description = "List of subnet IDs"
+  type        = list(string)
+  default     = ["subnet-05ec782ffe06a27ee"]
 }
 
 variable "redis_endpoint" {
-  description = "The Redis endpoint"
+  description = "Redis endpoint"
   type        = string
+  default     = ""
 }
 
 variable "redis_endpoint_prod" {
-  description = "The Redis endpoint for production"
+  description = "Redis endpoint for prod environment"
+  type        = string
+  default     = "testlambda-1os2ns.serverless.usw2.cache.amazonaws.com:6379"
+}
+
+variable "security_group_name" {
+  description = "Security group name"
   type        = string
 }
 
 variable "lambda_layers" {
-  description = "List of Lambda layers to attach to the function"
+  description = "List of Lambda layers ARNs"
   type        = list(string)
+  default     = []
 }
 
 variable "concurrency_limit" {
-  description = "Reserved concurrent executions for the Lambda function"
+  description = "Concurrency limit for the Lambda function"
   type        = number
 }
 
+variable "region" {
+  description = "AWS Region"
+  type        = string
+}
+
+variable "vpc_id" {
+  description = "VPC ID where the security group will be created"
+  type        = string
+}
+
 variable "eventbridge_rule_name" {
-  description = "Name of the EventBridge rule"
+  description = "EventBridge rule name"
   type        = string
 }
-
-variable "security_group_name" {
-  description = "Name of the security group"
-  type        = string
-}
-
 
 variable "eventbridge_rule_schedule" {
-  description = "The schedule expression for the EventBridge rule"
+  description = "EventBridge rule schedule expression"
   type        = string
 }
-
