@@ -31,6 +31,12 @@ variable "security_group_name" {
   type        = string
 }
 
+variable "security_group_ids" {
+  description = "Security Group IDs for the Lambda function"
+  type        = list(string)
+  default     = []
+}
+
 variable "lambda_layers" {
   description = "List of Lambda layers ARNs"
   type        = list(string)
