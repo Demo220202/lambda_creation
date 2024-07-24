@@ -85,3 +85,9 @@ variable "timeout" {
   default     = 30
 }
 
+variable "runtime" {
+  description = "Runtime for the Lambda function"
+  type        = string
+  default     = "python3.8"
+}
+
