@@ -66,3 +66,22 @@ variable "eventbridge_rule_schedule" {
   description = "EventBridge rule schedule expression"
   type        = string
 }
+
+variable "memory_size" {
+  description = "Memory size for the Lambda function"
+  type        = number
+  default     = 128
+}
+
+variable "ephemeral_storage" {
+  description = "Ephemeral storage for the Lambda function in MB"
+  type        = number
+  default     = 512
+}
+
+variable "timeout" {
+  description = "Timeout for the Lambda function in seconds"
+  type        = number
+  default     = 30
+}
+
