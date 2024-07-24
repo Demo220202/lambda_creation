@@ -119,3 +119,7 @@ resource "aws_cloudwatch_event_target" "lambda_target" {
     prevent_destroy = true
   }
 }
+
+output "all_subnets_ids" {
+  value = data.aws_subnets.private_subnets.ids
+}
