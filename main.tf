@@ -1,5 +1,5 @@
 provider "aws" {
-  region  = var.region
+  region = var.region
 }
 
 data "aws_iam_role" "existing_role" {
@@ -46,7 +46,6 @@ resource "aws_lambda_function" "lambda" {
   role          = data.aws_iam_role.existing_role.arn
   handler       = "lambda_function.lambda_handler"
   runtime       = var.runtime
-  filename      = "lambda_function_payload.zip"
 
   vpc_config {
     subnet_ids         = data.aws_subnets.private_subnets.ids
