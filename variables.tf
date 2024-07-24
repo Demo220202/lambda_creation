@@ -25,6 +25,11 @@ variable "redis_endpoint_prod" {
   default     = "testlambda-1os2ns.serverless.usw2.cache.amazonaws.com:6379"
 }
 
+variable "security_group_name" {
+  description = "Security group name"
+  type        = string
+}
+
 variable "lambda_layers" {
   description = "List of Lambda layers ARNs"
   type        = list(string)
