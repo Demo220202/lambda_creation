@@ -22,6 +22,27 @@ data "aws_subnets" "private_subnets" {
   }
 }
 
+resource "aws_security_group" "sg" {
+  name        = "${var.environment}-${var.function_name}-sg"
+  description = "Security group for ${var.environment} environment"
+  vpc_id      = var.vpc_id
+
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+
 resource "aws_lambda_function" "lambda" {
   function_name = "Zen-${var.environment}-${var.function_name}"
   role          = data.aws_iam_role.existing_role.arn
