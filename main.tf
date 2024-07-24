@@ -46,7 +46,6 @@ resource "aws_lambda_function" "lambda" {
   role          = data.aws_iam_role.existing_role.arn
   handler       = "lambda_function.lambda_handler"
   runtime       = var.runtime
-  filename      = "lambda_function_payload.zip"
   memory_size   = var.memory_size
   ephemeral_storage {
     size = var.ephemeral_storage
