@@ -1,86 +1,104 @@
 provider "aws" {
-  region  = var.region
-  #profile = "Aditya-demo"
+  region = "us-west-2"
 }
 
-data "aws_iam_role" "existing_role" {
-  name = var.existing_iam_role_name
-}
+resource "aws_security_group" "lambda_sg" {
+  for_each = var.vpc_id
 
-resource "aws_security_group" "sg" {
-  name        = "${var.environment}-${var.function_name}-sg"
-  description = "Security group for ${var.environment} environment"
-  vpc_id      = var.vpc_id
-
+  vpc_id = each.value
+  name   = "${each.key}-lambda-sg"
+  
   ingress {
     from_port   = 0
     to_port     = 0
-    protocol    = "-1"
+    protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
     from_port   = 0
     to_port     = 0
-    protocol    = "-1"
+    protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  tags = merge(
+    var.tags,
+    {
+      Name = "${each.key}-lambda-sg"
+    }
+  )
 }
 
 resource "aws_lambda_function" "lambda" {
-  function_name = "Zen-${var.environment}-${var.function_name}"
-  role          = data.aws_iam_role.existing_role.arn
+  for_each = var.vpc_id
+
+  function_name = "${each.key}-lambda"
+  role          = var.iam_role[each.key]
   handler       = "lambda_function.lambda_handler"
-  runtime       = "python3.8"
-  filename      = "lambda_function_payload.zip"
+  runtime       = var.runtime
+  memory_size   = var.lambda_config[each.key].memory_size
+  timeout       = var.lambda_config[each.key].timeout
+  ephemeral_storage = var.lambda_config[each.key].ephemeral_storage
 
   vpc_config {
-    subnet_ids         = var.subnet_ids
-    security_group_ids = [aws_security_group.sg.id]
+    subnet_ids         = data.aws_subnets.private.ids
+    security_group_ids = [aws_security_group.lambda_sg[each.key].id]
   }
 
-  environment {
-    variables = {
-      REDIS_ENDPOINT = var.environment == "prod" ? var.redis_endpoint_prod : var.redis_endpoint
+  layers = var.lambda_layers[each.key]
+
+  source_code_hash = filebase64sha256("lambda.zip")
+  filename          = "lambda.zip"
+
+  tags = merge(
+    var.tags,
+    {
+      Name = "${each.key}-lambda"
+    }
+  )
+}
+
+data "aws_subnet_ids" "private" {
+  vpc_id = var.vpc_id[each.key]
+  filter {
+    name   = "tag:aws:cloudformation:stack-name"
+    values = ["private"]
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "event_rule" {
+  for_each = var.eventbridge_schedule
+
+  name        = "Zen-${each.key}-lambda-rule"
+  schedule_expression = each.value
+
+  tags = merge(
+    var.tags,
+    {
+      Name = "Zen-${each.key}-lambda-rule"
+    }
+  )
+}
+
+resource "aws_cloudwatch_event_target" "event_target" {
+  for_each = var.eventbridge_schedule
+
+  rule      = aws_cloudwatch_event_rule.event_rule[each.key].name
+  arn       = aws_lambda_function.lambda[each.key].arn
+  target_id = "${each.key}-target"
+
+  input_transformer {
+    input_paths = {
+      "key1" = "$.detail.key1"
     }
   }
-
-  layers = var.lambda_layers
-
-  reserved_concurrent_executions = var.concurrency_limit
-
-  lifecycle {
-    prevent_destroy = true
-  }
 }
 
-resource "aws_lambda_permission" "allow_eventbridge" {
-  statement_id  = "AllowExecutionFromEventBridge"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.lambda.function_name
-  principal     = "events.amazonaws.com"
-  source_arn    = aws_cloudwatch_event_rule.scheduled.arn
+resource "aws_lambda_alias" "lambda_alias" {
+  for_each = var.vpc_id
 
-  lifecycle {
-    prevent_destroy = true
-  }
-}
-
-resource "aws_cloudwatch_event_rule" "scheduled" {
-  name                = "Zen-${var.environment}-${var.function_name}-rule"
-  schedule_expression = var.eventbridge_rule_schedule
-
-  lifecycle {
-    prevent_destroy = true
-  }
-}
-
-resource "aws_cloudwatch_event_target" "lambda_target" {
-  rule      = aws_cloudwatch_event_rule.scheduled.name
-  target_id = "lambda_target"
-  arn       = aws_lambda_function.lambda.arn
-
-  lifecycle {
-    prevent_destroy = true
-  }
+  name             = "latest"
+  function_name    = aws_lambda_function.lambda[each.key].function_name
+  function_version = "$LATEST"
 }
