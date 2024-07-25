@@ -13,6 +13,11 @@ variable "existing_iam_role_name" {
   type        = string
 }
 
+variable "subnet_ids" {
+  description = "List of subnet IDs"
+  type        = list(string)
+  default     = ["subnet-05ec782ffe06a27ee"]
+}
 
 variable "redis_endpoint" {
   description = "Redis endpoint"
@@ -29,12 +34,6 @@ variable "redis_endpoint_prod" {
 variable "security_group_name" {
   description = "Security group name"
   type        = string
-}
-
-variable "security_group_ids" {
-  description = "Security Group IDs for the Lambda function"
-  type        = list(string)
-  default     = []
 }
 
 variable "lambda_layers" {
@@ -66,28 +65,4 @@ variable "eventbridge_rule_name" {
 variable "eventbridge_rule_schedule" {
   description = "EventBridge rule schedule expression"
   type        = string
-}
-
-variable "memory_size" {
-  description = "Memory size for the Lambda function"
-  type        = number
-  default     = 128
-}
-
-variable "ephemeral_storage" {
-  description = "Ephemeral storage for the Lambda function in MB"
-  type        = number
-  default     = 512
-}
-
-variable "timeout" {
-  description = "Timeout for the Lambda function in seconds"
-  type        = number
-  default     = 30
-}
-
-variable "runtime" {
-  description = "Runtime for the Lambda function"
-  type        = string
-  default     = "python3.8"
 }
