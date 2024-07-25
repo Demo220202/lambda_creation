@@ -1,0 +1,17 @@
+environment            = "dr"
+function_name          = "myLambda"
+existing_iam_role_name = "lamda-role"
+redis_endpoint         = ""
+redis_endpoint_prod    = ""
+security_group_name    = "dr-myLambda-sg"
+security_group_ids     = []
+lambda_layers          = []
+concurrency_limit      = 0
+region                 = "us-east-1"
+vpc_id                 = "vpc-00c4b46941f3ab26b"
+eventbridge_rule_name  = "Zen-dr-myLamda-rule"
+eventbridge_rule_schedule = "rate(5 minutes)"
+memory_size            = 128
+ephemeral_storage      = 512
+timeout                = 30
+runtime                = "python3.8"
