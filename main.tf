@@ -1,24 +1,10 @@
 provider "aws" {
-  region = var.region
+  region  = var.region
+  #profile = "Aditya-demo"
 }
 
 data "aws_iam_role" "existing_role" {
   name = var.existing_iam_role_name
-}
-
-data "aws_vpc" "selected" {
-  id = var.vpc_id
-}
-
-data "aws_subnets" "private_subnets" {
-  filter {
-    name   = "vpc-id"
-    values = [var.vpc_id]
-  }
-  filter {
-    name   = "tag:Name"
-    values = ["*private*"]
-  }
 }
 
 resource "aws_security_group" "sg" {
@@ -45,19 +31,12 @@ resource "aws_lambda_function" "lambda" {
   function_name = "Zen-${var.environment}-${var.function_name}"
   role          = data.aws_iam_role.existing_role.arn
   handler       = "lambda_function.lambda_handler"
-  runtime       = var.runtime
-  memory_size   = var.memory_size
-  ephemeral_storage {
-    size = var.ephemeral_storage
-  }
-  timeout       = var.timeout
+  runtime       = "python3.8"
+  filename      = "lambda_function_payload.zip"
 
-  dynamic "vpc_config" {
-    for_each = var.vpc_id != "" && length(data.aws_subnets.private_subnets.ids) > 0 && length(var.security_group_ids) > 0 ? [1] : []
-    content {
-      subnet_ids         = data.aws_subnets.private_subnets.ids
-      security_group_ids = var.security_group_ids
-    }
+  vpc_config {
+    subnet_ids         = var.subnet_ids
+    security_group_ids = [aws_security_group.sg.id]
   }
 
   environment {
@@ -70,19 +49,6 @@ resource "aws_lambda_function" "lambda" {
 
   reserved_concurrent_executions = var.concurrency_limit
 
-  tags = {
-    Name = "zenarate/${var.environment}"
-  }
-
-  lifecycle {
-    prevent_destroy = true
-  }
-}
-
-resource "aws_lambda_alias" "lambda_alias" {
-  name             = "${var.environment}-alias"
-  function_name    = aws_lambda_function.lambda.function_name
-  function_version = aws_lambda_function.lambda.version
   lifecycle {
     prevent_destroy = true
   }
