@@ -92,12 +92,13 @@ resource "aws_lambda_permission" "allow_eventbridge" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.lambda.function_name
   principal     = "events.amazonaws.com"
-  source_arn    = aws_cloudwatch_event_rule.scheduled.arn
+  source_arn    = var.create_eventbridge_rule ? aws_cloudwatch_event_rule.scheduled[0].arn : null
 
   lifecycle {
     prevent_destroy = true
   }
 }
+
 
 resource "aws_cloudwatch_event_rule" "scheduled" {
   count               = var.create_eventbridge_rule ? 1 : 0
@@ -111,14 +112,15 @@ resource "aws_cloudwatch_event_rule" "scheduled" {
 
 resource "aws_cloudwatch_event_target" "lambda_target" {
   count    = var.create_eventbridge_rule ? 1 : 0
-  rule     = aws_cloudwatch_event_rule.scheduled[count.index].name
+  rule     = aws_cloudwatch_event_rule.scheduled[0].name
   target_id = "lambda_target"
-  arn       = aws_lambda_function.lambda.arn
+  arn      = aws_lambda_function.lambda.arn
 
   lifecycle {
     prevent_destroy = true
   }
 }
+
 
 output "all_subnets_ids" {
   value = data.aws_subnets.private_subnets.ids
