@@ -91,3 +91,10 @@ variable "runtime" {
   type        = string
   default     = "python3.8"
 }
+
+variable "create_eventbridge_rule" {
+  description = "Flag to determine whether to create EventBridge rule for the Lambda function"
+  type        = bool
+  default     = false
+}
+
