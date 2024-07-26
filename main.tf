@@ -78,7 +78,7 @@ resource "aws_lambda_function" "lambda" {
 }
 
 resource "aws_lambda_alias" "lambda_alias" {
-  name             = "${var.environment}-alias"
+  name             = "active" # ${var.environment}-alias
   function_name    = aws_lambda_function.lambda.function_name
   function_version = aws_lambda_function.lambda.version
   lifecycle {
