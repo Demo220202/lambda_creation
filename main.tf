@@ -57,14 +57,6 @@ resource "aws_lambda_function" "lambda" {
     subnet_ids         = data.aws_subnets.private_subnets.ids
     security_group_ids = [aws_security_group.sg.id]
   }
-  
-  #dynamic "vpc_config" {
-    #for_each = var.vpc_id != "" && length(data.aws_subnets.private_subnets.ids) > 0 && length(var.security_group_ids) > 0 ? [1] : []
-    #content {
-     # subnet_ids         = data.aws_subnets.private_subnets.ids
-    #  security_group_ids = var.security_group_ids
-   # }
-  #}
 
   environment {
     variables = {
@@ -95,6 +87,7 @@ resource "aws_lambda_alias" "lambda_alias" {
 }
 
 resource "aws_lambda_permission" "allow_eventbridge" {
+  count         = var.create_eventbridge_rule ? 1 : 0
   statement_id  = "AllowExecutionFromEventBridge"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.lambda.function_name
@@ -107,6 +100,7 @@ resource "aws_lambda_permission" "allow_eventbridge" {
 }
 
 resource "aws_cloudwatch_event_rule" "scheduled" {
+  count               = var.create_eventbridge_rule ? 1 : 0
   name                = "Zen-${var.environment}-${var.function_name}-rule"
   schedule_expression = var.eventbridge_rule_schedule
 
@@ -116,7 +110,8 @@ resource "aws_cloudwatch_event_rule" "scheduled" {
 }
 
 resource "aws_cloudwatch_event_target" "lambda_target" {
-  rule      = aws_cloudwatch_event_rule.scheduled.name
+  count    = var.create_eventbridge_rule ? 1 : 0
+  rule     = aws_cloudwatch_event_rule.scheduled[count.index].name
   target_id = "lambda_target"
   arn       = aws_lambda_function.lambda.arn
 
