@@ -60,7 +60,7 @@ resource "aws_lambda_function" "lambda" {
 
   environment {
     variables = {
-      REDIS_ENDPOINT = var.environment == "prod" ? var.redis_endpoint_prod : var.redis_endpoint
+      REDIS_ENDPOINT = var.redis_endpoint
     }
   }
 
